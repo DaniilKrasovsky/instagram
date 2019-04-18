@@ -3,17 +3,20 @@ import flask
 from instagram import views
 from instagram.db import db
 from instagram.auth import login_manager
-from instagram.configuration import InstagramConfig
 
 
-def create_application(configuration_class=InstagramConfig):
+def create_application(configuration):
     application = flask.Flask(__name__)
 
-    application.config.from_object(configuration_class)
+    application.config.from_object(configuration)
 
     db.init_app(application)
 
-    db.create_all(app=application)
+    try:
+        db.create_all(app=application)
+
+    except:
+        pass
 
     login_manager.init_app(application)
 
@@ -28,7 +31,7 @@ def create_application(configuration_class=InstagramConfig):
     )
 
     application.add_url_rule(
-        rule='/<user_id>/',
+        rule='/user/<user_id>/',
         view_func=views.ProfilePhotos.as_view('profile-photos'),
     )
 
@@ -50,6 +53,11 @@ def create_application(configuration_class=InstagramConfig):
     application.add_url_rule(
         rule='/add_like/<photo_id>/',
         view_func=views.AddLike.as_view('add-like'),
+    )
+
+    application.add_url_rule(
+        rule='/add_comment/<photo_id>/',
+        view_func=views.AddComment.as_view('add-comment'),
     )
 
     return application
